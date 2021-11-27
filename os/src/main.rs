@@ -29,9 +29,9 @@ global_asm!(include_str!("entry.asm"));
 // }
 
 #[no_mangle]
-pub fn rust_main() -> ! {
+pub fn rust_main()  {
     clear_bss();
     println!("Hello world");
-    // shutdown();
-    panic!("It should shutdown!");
+    sbi::shutdown();
+    // panic!("It should shutdown!");
 }
