@@ -40,11 +40,11 @@ pub fn shutdown() -> ! {
     panic!("It should shutdown");
 }
 
-pub fn sys_exit(xstate: i32) -> usize {
-    sbi_call(SYSCALL_EXIT, xstate as usize, 0, 0)
-}
+// pub fn sys_exit(xstate: i32) -> usize {
+//     sbi_call(SYSCALL_EXIT, xstate as usize, 0, 0)
+// }
 
-/*封装SYSCALL_WRITE系统调用*/
-pub fn sys_write(fd: usize, buffer: &[u8]) -> usize {
-    sbi_call(SYSCALL_WRITE, fd, buffer.as_ptr() as usize, buffer.len())
-}
+// /*封装SYSCALL_WRITE系统调用*/
+// pub fn sys_write(fd: usize, buffer: &[u8]) -> usize {
+//     sbi_call(SYSCALL_WRITE, fd, buffer.as_ptr() as usize, buffer.len())
+// }
