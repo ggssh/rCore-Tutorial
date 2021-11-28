@@ -1,6 +1,7 @@
 OUTPUT_ARCH(riscv)
 ENTRY(_start)
-BASE_ADDRESS = 0x80200000;
+
+BASE_ADDRESS = 0x80400000;
 
 /*comments*/
 SECTIONS
@@ -19,14 +20,19 @@ SECTIONS
             *(.text.*)
         */
     }
+    /*
     . = ALIGN(4K);
+    */
     etext = .;
 
     srodata = .;
     .rodata : {
         *(.rodata .rodata.*)
+        *(.srodata .srodata.*)
     }
+    /*
     . = ALIGN(4K);
+    */
     erodata = .;
 
     sdata = .;
@@ -34,16 +40,22 @@ SECTIONS
         *(.data .data.*)
         *(.sdata .sdata.*)
     }
+    /*
     . = ALIGN(4K);
+    */
     edata = .;
 
     .bss : {
+        start_bss = .;
         *(.bss.stack)
         sbss = .;
         *(.bss .bss.*)
         *(.sbss .sbss.*)
+        end_bss = .;
     }
+    /*
     . = ALIGN(4K);
+    */
     ebss = .;
 
     ekernel = .;

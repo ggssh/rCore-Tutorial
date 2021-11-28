@@ -1,3 +1,5 @@
 os/target
 os/Cargo.lock
 .idea
+user/target
+user/Cargo.lock
