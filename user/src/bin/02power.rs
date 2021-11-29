@@ -15,7 +15,7 @@ fn main() -> i32 {
     let mut index: usize = 0;
     pow[index] = 1;
     for i in 1..=STEP {
-        println!("{}",&i);
+        println!("{}", &i);
         let last = pow[index];
         index = (index + 1) % SIZE;
         pow[index] = last * P % MOD;
