@@ -1,6 +1,7 @@
 #![no_std]
 #![no_main]
 #![feature(llvm_asm)]
+#![feature(asm)]
 #![feature(global_asm)]
 #![feature(panic_info_message)]
 
@@ -8,8 +9,11 @@
 mod console;
 mod lang_item;
 mod sbi;
+mod batch;
+mod sync;
 
 global_asm!(include_str!("entry.asm"));
+global_asm!(include_str!("link_app.asm"));
 
 /*清空.bss段*/
 fn clear_bss() {
