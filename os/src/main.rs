@@ -7,10 +7,12 @@
 
 #[macro_use]
 mod console;
+mod batch;
 mod lang_item;
 mod sbi;
-mod batch;
 mod sync;
+mod syscall;
+mod trap;
 
 global_asm!(include_str!("entry.asm"));
 global_asm!(include_str!("link_app.asm"));
@@ -47,16 +49,19 @@ pub fn rust_main() {
         fn boot_stack_top();
     }
     clear_bss();
-    println!("Hello world");
+    // println!("Hello world");
     // error!("rust yes");
-    // println!(".text [{:#x}, {:#x})", stext as usize, etext as usize);
-    // println!(".rodata [{:#x}, {:#x})", srodata as usize, erodata as usize);
-    // println!(".data [{:#x}, {:#x})", sdata as usize, edata as usize);
-    println!(
+    info!(".text [{:#x}, {:#x})", stext as usize, etext as usize);
+    info!(".rodata [{:#x}, {:#x})", srodata as usize, erodata as usize);
+    info!(".data [{:#x}, {:#x})", sdata as usize, edata as usize);
+    info!(
         "boot_stack [{:#x}, {:#x})",
         boot_stack as usize, boot_stack_top as usize
     );
-    // println!(".bss [{:#x}, {:#x})", sbss as usize, ebss as usize);
+    info!(".bss [{:#x}, {:#x})", sbss as usize, ebss as usize);
     // // sbi::shutdown();
-    panic!("It should shutdown!");
+    // panic!("It should shutdown!");
+    trap::init();
+    batch::init();
+    batch::run_next_app();
 }

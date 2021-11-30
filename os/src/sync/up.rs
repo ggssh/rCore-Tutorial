@@ -1,5 +1,5 @@
-use core::{cell::{RefCell, RefMut}};
 use core::borrow::BorrowMut;
+use core::cell::{RefCell, RefMut};
 
 pub struct UPSafeCell<T> {
     // inner data
