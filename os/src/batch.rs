@@ -1,11 +1,51 @@
-use core::ops::Add;
-
 use crate::sync::UPSafeCell;
+use crate::trap::TrapContext;
+use core::ops::Add;
 use lazy_static::*;
 
 const MAX_APP_NUM: usize = 16;
 const APP_BASE_ADDRESS: usize = 0x80400000;
 const APP_SIZE_LIMIT: usize = 0x20000;
+// 内核栈和用户栈的大小分别为8kib,两者是以全局变量的形式实例化在批处理操作系统的.bss段中
+const USER_STACK_SIZE: usize = 4096 * 2;
+const KERNEL_STACK_SIZE: usize = 4096 * 2;
+
+#[repr(align(4096))]
+struct KernelStack {
+    data: [u8; KERNEL_STACK_SIZE],
+}
+
+impl KernelStack {
+    // 获取栈顶地址
+    fn get_sp(&self) -> usize {
+        self.data.as_ptr() as usize + KERNEL_STACK_SIZE
+    }
+    pub fn push_context(&self, cx: TrapContext) -> &'static mut TrapContext {
+        let cx_ptr = (self.get_sp() - core::mem::size_of::<TrapContext>()) as *mut TrapContext;
+        unsafe {
+            *cx_ptr = cx;
+        }
+        unsafe { cx_ptr.as_mut().unwrap() }
+    }
+}
+
+#[repr(align(4096))]
+struct UserStack {
+    data: [u8; USER_STACK_SIZE],
+}
+
+impl UserStack {
+    fn get_sp(&self) -> usize {
+        self.data.as_ptr() as usize + USER_STACK_SIZE
+    }
+}
+
+static KERNEL_STACK: KernelStack = KernelStack {
+    data: [0; KERNEL_STACK_SIZE],
+};
+static USER_STACK: UserStack = UserStack {
+    data: [0; USER_STACK_SIZE],
+};
 
 // 应用管理器AppManager
 // 能够找到并加载应用程序二进制码
@@ -43,9 +83,9 @@ lazy_static! {
 
 impl AppManager {
     pub fn print_app_info(&self) {
-        println!("[rCore kernel] num_app = {}", self.num_app);
+        info!("[rCore kernel] num_app = {}", self.num_app);
         for i in 0..self.num_app {
-            println!(
+            info!(
                 "[rCore kernel] app_{} [{:#x}, {:#x})",
                 &i,
                 self.app_start[i],
@@ -59,7 +99,7 @@ impl AppManager {
         if app_id >= self.num_app {
             panic!("All applications completed!\n There is no application need to run.");
         }
-        println!("[rCore kernel] Loading app_{}", app_id);
+        info!("[rCore kernel] Loading app_{}", app_id);
         // clear icache
         asm!("fence.i");
         // 清空内存(大小为APP_SIZE_LIMIT)
@@ -94,17 +134,20 @@ pub fn print_app_info() {
 pub fn run_next_app() -> ! {
     let mut app_manager = APP_MANAGER.exclusive_access();
     let current_app = app_manager.get_current_app();
-    unsafe{
+    unsafe {
         app_manager.load_app(current_app);
     }
     app_manager.move_to_next_app();
     drop(app_manager);
     // before this we have to drop local variables related to resources manually and release the resources
     extern "C" {
-        fn __restore(cx_addr:usize);
+        fn __restore(cx_addr: usize);
     }
-    // unsafe{
-    //     __restore()
-    // }
+    unsafe {
+        __restore(KERNEL_STACK.push_context(TrapContext::app_init_context(
+            APP_BASE_ADDRESS,
+            USER_STACK.get_sp(),
+        )) as *const _ as usize);
+    }
     panic!("Unreachable in batch::run_current_app!");
 }
