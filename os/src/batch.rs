@@ -18,8 +18,11 @@ struct KernelStack {
 impl KernelStack {
     // 获取栈顶地址
     fn get_sp(&self) -> usize {
+        // 数组的结尾地址
         self.data.as_ptr() as usize + KERNEL_STACK_SIZE
     }
+
+    /// 返回值是内核栈压入Trap上下文之后的栈顶
     pub fn push_context(&self, cx: TrapContext) -> &'static mut TrapContext {
         let cx_ptr = (self.get_sp() - core::mem::size_of::<TrapContext>()) as *mut TrapContext;
         unsafe {
@@ -144,6 +147,9 @@ pub fn run_next_app() -> ! {
         fn __restore(cx_addr: usize);
     }
     unsafe {
+        // 在内核栈压入一个Trap上下文
+        // push_context的返回值为内核栈栈顶,作为__restore的参数,在__restore中完成 sp<-a0
+        // 使sp仍然指向内核栈的栈顶
         __restore(KERNEL_STACK.push_context(TrapContext::app_init_context(
             APP_BASE_ADDRESS,
             USER_STACK.get_sp(),

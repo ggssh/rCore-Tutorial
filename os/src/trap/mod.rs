@@ -16,7 +16,10 @@ pub fn init() {
     extern "C" {
         fn __alltraps();
     }
-    unsafe { stvec::write(__alltraps as usize, TrapMode::Direct) }
+    unsafe { 
+        // 此时进入S模式的Trap无论原因如何,处理Trap的入口地址都是BASE<<2
+        stvec::write(__alltraps as usize, TrapMode::Direct) 
+    }
 }
 
 // 在trap.asm中调用
