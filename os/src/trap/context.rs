@@ -1,7 +1,7 @@
 use riscv::register::sstatus::{self, Sstatus, SPP};
 
 pub struct TrapContext {
-    pub x: [usize; 32],
+    pub x: [usize; 32],   // 32个通用寄存器
     pub sstatus: Sstatus, // SPP 等字段给出 Trap 发生之前 CPU 处在哪个特权级（S/U）等信息
     pub sepc: usize,      // 记录trap发生前执行的最后一条指令的地址
 }

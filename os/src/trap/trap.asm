@@ -9,9 +9,11 @@
     .section .text
     .globl __alltraps
     .globl __restore
-    .align 2
+    .align 2 // 将__alltraps地址4字节对齐
 __alltraps:
     # sp 和 sscratch交换
+    # 在用户态，sscratch 保存内核栈的地址；在内核态，sscratch 的值为 0
+    # 当前sp指向用户栈,sscratch指向内核栈
     csrrw sp, sscratch, sp
     # sp->kernel stack, sscratch->user stack
     # allocate a TrapContext on kernel stack
@@ -32,7 +34,7 @@ __alltraps:
     csrr t1, sepc
     sd t0, 32*8(sp)
     sd t1, 33*8(sp)
-    # read user stack from sscratch and save it on the kernel stack
+    # read user stack from sscratch and save it on the kernel stack(csrr 读控制状态寄存器 csrr rd,csr x[rd]=CSRs[csr])
     csrr t2, sscratch
     sd t2, 2*8(sp)
     # set input argument of trap_handler(cx: &mut TrapContext)
