@@ -18,8 +18,11 @@ for app in apps:
             lines.append(line)
     with open(linker, 'w+') as f:
         f.writelines(lines)
+        
+    # 使用bin参数只构建某个应用
     os.system('cargo build --bin %s --release' % app)
-    print('[build.py] application %s start with address %s' %(app, hex(base_address+step*app_id)))
+    
+    print('\x1b[34m   [build.py]\x1b[0m application %s start with address %s' %(app, hex(base_address+step*app_id)))
     with open(linker, 'w+') as f:
         f.writelines(lines_before)
     app_id = app_id + 1
