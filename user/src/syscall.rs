@@ -14,6 +14,8 @@ fn syscall(id: usize, args: [usize; 3]) -> isize {
 
 const SYSCALL_WRITE: usize = 64;
 const SYSCALL_EXIT: usize = 93;
+const SYSCALL_YIELD: usize = 124;
+const SYSCALL_GET_TIME: usize = 169;
 
 // 功能：退出应用程序并将返回值告知批处理系统。
 // 参数：`xstate` 表示应用程序的返回值。
@@ -32,4 +34,12 @@ pub fn sys_exit(xstate: i32) -> isize {
 // syscall ID：64
 pub fn sys_write(fd: usize, buffer: &[u8]) -> isize {
     syscall(SYSCALL_WRITE, [fd, buffer.as_ptr() as usize, buffer.len()])
+}
+
+pub fn sys_yield() -> isize {
+    syscall(SYSCALL_YIELD, [0, 0, 0])
+}
+
+pub fn sys_get_time() -> isize {
+    syscall(SYSCALL_GET_TIME, [0, 0, 0])
 }

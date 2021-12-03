@@ -7,15 +7,18 @@
 
 #[macro_use]
 mod console;
-mod batch;
+// mod batch;
 mod lang_item;
 mod sbi;
 mod sync;
 mod syscall;
 mod trap;
+mod loader;
+mod config;
+mod task;
 
 global_asm!(include_str!("entry.asm"));
-global_asm!(include_str!("link_app.asm"));
+global_asm!(include_str!("link_app.S"));
 
 /*清空.bss段*/
 fn clear_bss() {
@@ -62,6 +65,6 @@ pub fn rust_main() {
     // // sbi::shutdown();
     // panic!("It should shutdown!");
     trap::init();
-    batch::init();
-    batch::run_next_app();
+    // batch::init();
+    // batch::run_next_app();
 }
