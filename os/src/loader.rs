@@ -67,6 +67,7 @@ pub fn load_apps() {
     unsafe {
         llvm_asm!("fence.i"::::"volatile");
     }
+    // 加载用户程序
     for i in 0..num_app {
         let base_i = get_base_i(i);
 
