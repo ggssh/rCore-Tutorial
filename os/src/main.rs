@@ -8,14 +8,14 @@
 #[macro_use]
 mod console;
 // mod batch;
+mod config;
 mod lang_item;
+mod loader;
 mod sbi;
 mod sync;
 mod syscall;
-mod trap;
-mod loader;
-mod config;
 mod task;
+mod trap;
 
 global_asm!(include_str!("entry.asm"));
 global_asm!(include_str!("link_app.S"));
@@ -65,6 +65,10 @@ pub fn rust_main() {
     // // sbi::shutdown();
     // panic!("It should shutdown!");
     trap::init();
+    
+    loader::load_apps();
+    task::run_first_task();
     // batch::init();
     // batch::run_next_app();
+    panic!("Unreachable in rust_main!");
 }

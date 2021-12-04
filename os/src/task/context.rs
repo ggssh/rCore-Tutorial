@@ -1,4 +1,5 @@
 #[derive(Debug, Clone, Copy)]
+#[repr(C)] // 按照C内存布局
 pub struct TaskContext {
     ra: usize, // 64bit = 8Bytes
     sp: usize,

@@ -24,6 +24,7 @@ $(KERNEL_BIN): build
 	@$(OBJCOPY) $(KERNEL_ELF) --strip-all -O binary $@
 
 build:
+	@cd ../user && make build
 	@cargo build --release
 
 clean:

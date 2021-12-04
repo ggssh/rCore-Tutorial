@@ -56,6 +56,7 @@ fn get_base_i(app_id: usize) -> usize {
     APP_BASE_ADDRESS + app_id * APP_SIZE_LIMIT
 }
 
+// 加载app
 pub fn load_apps() {
     extern "C" {
         fn _num_app();
