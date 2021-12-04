@@ -8,14 +8,14 @@
 #[macro_use]
 mod console;
 // mod batch;
+mod config;
 mod lang_item;
+mod loader;
 mod sbi;
 mod sync;
 mod syscall;
-mod trap;
-mod loader;
-mod config;
 mod task;
+mod trap;
 
 global_asm!(include_str!("entry.asm"));
 global_asm!(include_str!("link_app.S"));
@@ -28,13 +28,6 @@ fn clear_bss() {
     }
     (sbss as usize..ebss as usize).for_each(|a| unsafe { (a as *mut u8).write_volatile(0) });
 }
-
-// #[no_mangle]
-// extern "C" fn _start() {
-//     println!("Hello rCore-Turtial !");
-//     // sys_exit(9);
-//     shutdown();
-// }
 
 // 避免编译器对它的名字进行混淆,导致entry.asm找不到外部符号rust_main从而链接失败
 #[no_mangle]
@@ -65,6 +58,10 @@ pub fn rust_main() {
     // // sbi::shutdown();
     // panic!("It should shutdown!");
     trap::init();
+    
+    loader::load_apps();
+    task::run_first_task();
     // batch::init();
     // batch::run_next_app();
+    panic!("Unreachable in rust_main!");
 }

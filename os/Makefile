@@ -24,6 +24,7 @@ $(KERNEL_BIN): build
 	@$(OBJCOPY) $(KERNEL_ELF) --strip-all -O binary $@
 
 build:
+	@cd ../user && make build
 	@cargo build --release
 
 clean:
@@ -35,5 +36,10 @@ run: $(KERNEL_BIN)
 		-nographic \
 		-bios $(BOOTLOADER) \
 		-device loader,file=$(KERNEL_BIN),addr=$(KERNEL_ENTRY_ADD)
-
+debug: $(KERNEL_BIN)
+	@qemu-system-riscv64 \
+		-machine virt \
+		-nographic \
+		-bios $(BOOTLOADER) \
+		-device loader,file=$(KERNEL_BIN),addr=$(KERNEL_ENTRY_ADD) -S -s
 .PHONY: build clean run
