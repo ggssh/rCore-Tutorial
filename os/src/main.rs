@@ -29,13 +29,6 @@ fn clear_bss() {
     (sbss as usize..ebss as usize).for_each(|a| unsafe { (a as *mut u8).write_volatile(0) });
 }
 
-// #[no_mangle]
-// extern "C" fn _start() {
-//     println!("Hello rCore-Turtial !");
-//     // sys_exit(9);
-//     shutdown();
-// }
-
 // 避免编译器对它的名字进行混淆,导致entry.asm找不到外部符号rust_main从而链接失败
 #[no_mangle]
 pub fn rust_main() {

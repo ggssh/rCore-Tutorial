@@ -25,7 +25,7 @@ pub fn init() {
 // 在trap.asm中调用
 #[no_mangle]
 pub fn trap_handler(cx: &mut TrapContext) -> &mut TrapContext {
-    info!("call trap_handler");
+    // info!("call trap_handler");
     let scause = scause::read();
     let stval = stval::read();
     match scause.cause() {
