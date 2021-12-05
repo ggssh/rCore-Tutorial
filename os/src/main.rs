@@ -5,6 +5,8 @@
 #![feature(global_asm)]
 #![feature(panic_info_message)]
 
+use crate::{timer::set_next_trigger, trap::enable_timer_interrupt};
+
 #[macro_use]
 mod console;
 // mod batch;
@@ -15,6 +17,7 @@ mod sbi;
 mod sync;
 mod syscall;
 mod task;
+mod timer;
 mod trap;
 
 global_asm!(include_str!("entry.asm"));
@@ -58,8 +61,10 @@ pub fn rust_main() {
     // // sbi::shutdown();
     // panic!("It should shutdown!");
     trap::init();
-    
+
     loader::load_apps();
+    enable_timer_interrupt();
+    set_next_trigger();
     task::run_first_task();
     // batch::init();
     // batch::run_next_app();
