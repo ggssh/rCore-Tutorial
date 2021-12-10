@@ -1,9 +1,13 @@
+#![allow(unused)]
+
 // 关机指令相关参数
 const SBI_SHUTDOWN: usize = 8;
 // 添加裸机打印相关函数
 const SBI_CONSOLE_PUTCHAR: usize = 1;
 // 设置mtimecmp的值(感谢rust_sbi,太令人泪目了)
 const SBI_SET_TIMER: usize = 0;
+// console_getchar
+const SBI_CONSOLE_GETCHAR: usize = 2;
 
 #[inline(always)]
 fn sbi_call(which: usize, arg0: usize, arg1: usize, arg2: usize) -> usize {
@@ -20,6 +24,10 @@ fn sbi_call(which: usize, arg0: usize, arg1: usize, arg2: usize) -> usize {
 
 pub fn console_putchar(c: usize) {
     sbi_call(SBI_CONSOLE_PUTCHAR, c, 0, 0);
+}
+
+pub fn console_getchar() -> usize {
+    sbi_call(SBI_CONSOLE_GETCHAR, 0, 0, 0)
 }
 
 // 由 SEE 提供的标准 SBI 接口函数
