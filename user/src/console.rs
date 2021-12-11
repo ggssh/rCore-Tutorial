@@ -1,7 +1,9 @@
 use crate::write;
+use crate::read;
 use core::fmt::{self, Write};
 
 const STDOUT: usize = 1;
+const STDIN: usize = 0;
 struct Stdout;
 
 impl Write for Stdout {
@@ -51,4 +53,10 @@ macro_rules! error {
     ($fmt: literal $(,$($arg: tt)+)?) => {
         $crate::console::print(format_args!(concat!("\x1b[31m","[ERROR]",$fmt,"\x1b[0m","\n") $(, $($arg)+)?));
     };
+}
+
+pub fn getchar() -> u8 {
+    let mut c = [0u8;1];
+    read(STDIN,&mut c);
+    c[0]
 }
