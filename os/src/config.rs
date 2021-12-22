@@ -4,5 +4,8 @@ pub const MAX_APP_NUM: usize = 5;
 pub const APP_BASE_ADDRESS: usize = 0x80400000;
 pub const APP_SIZE_LIMIT: usize = 0x20000;
 
+// 动态内存分配
+pub const KERNEL_HEAP_SIZE: usize = 0x30_0000;
+
 // 时间中断相关
 pub const CLOCK_FREQ: usize = 12500000;

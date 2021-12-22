@@ -4,8 +4,10 @@
 #![feature(asm)]
 #![feature(global_asm)]
 #![feature(panic_info_message)]
+#![feature(alloc_error_handler)]
 
 use crate::{timer::set_next_trigger, trap::enable_timer_interrupt};
+extern crate alloc;
 
 #[macro_use]
 mod console;
@@ -19,6 +21,7 @@ mod syscall;
 mod task;
 mod timer;
 mod trap;
+mod mm;
 
 global_asm!(include_str!("entry.asm"));
 global_asm!(include_str!("link_app.S"));
@@ -48,8 +51,10 @@ pub fn rust_main() {
         fn boot_stack_top();
     }
     clear_bss();
-    // println!("Hello world");
-    // error!("rust yes");
+
+    // mm::init();
+    // mm::mm_test_heap();
+
     info!(".text [{:#x}, {:#x})", stext as usize, etext as usize);
     info!(".rodata [{:#x}, {:#x})", srodata as usize, erodata as usize);
     info!(".data [{:#x}, {:#x})", sdata as usize, edata as usize);
