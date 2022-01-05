@@ -6,6 +6,8 @@
 #![feature(panic_info_message)]
 #![feature(alloc_error_handler)]
 
+use core::arch::global_asm;
+
 use crate::{timer::set_next_trigger, trap::enable_timer_interrupt};
 extern crate alloc;
 
