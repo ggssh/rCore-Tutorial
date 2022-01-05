@@ -1,5 +1,7 @@
 mod context;
 
+use core::arch::global_asm;
+
 pub use context::TrapContext;
 
 // use crate::batch::run_next_app;

@@ -5,6 +5,8 @@
 #![feature(global_asm)]
 #![feature(panic_info_message)]
 
+use core::arch::global_asm;
+
 use crate::{timer::set_next_trigger, trap::enable_timer_interrupt};
 
 #[macro_use]
