@@ -1,6 +1,9 @@
+use core::num;
+
 use crate::config::*;
 use crate::trap::TrapContext;
 
+// 原有的内核和用户栈分别作为逻辑段放在内核和用户地址空间中,无需再去专门为其定义一种类型
 #[repr(align(4096))]
 #[derive(Debug, Clone, Copy)]
 struct KernelStack {
@@ -54,6 +57,24 @@ pub fn get_num_app() -> usize {
 // 获得应用程序起始地址
 fn get_base_i(app_id: usize) -> usize {
     APP_BASE_ADDRESS + app_id * APP_SIZE_LIMIT
+}
+
+// 根据传入的应用编号取出对应应用的ELF格式可执行文件数据
+// 基于build.rs生成的link_app.s给出的符号来确定其位置,并实际放在内核的数据段中
+pub fn get_app_data(app_id: usize) -> &'static [u8] {
+    extern "C" {
+        fn _num_app();
+    }
+    let num_app_ptr = _num_app as usize as *const usize;
+    let num_app = get_num_app();
+    let app_start = unsafe { core::slice::from_raw_parts(num_app_ptr.add(1), num_app + 1) };
+    assert!(app_id < num_app);
+    unsafe {
+        core::slice::from_raw_parts(
+            app_start[app_id] as *const u8,
+            app_start[app_id + 1] - app_start[app_id],
+        )
+    }
 }
 
 // 加载app

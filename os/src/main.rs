@@ -17,13 +17,13 @@ mod console;
 mod config;
 mod lang_item;
 mod loader;
+mod mm;
 mod sbi;
 mod sync;
 mod syscall;
 mod task;
 mod timer;
 mod trap;
-mod mm;
 
 global_asm!(include_str!("entry.asm"));
 global_asm!(include_str!("link_app.S"));
