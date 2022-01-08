@@ -1,4 +1,8 @@
-use crate::{sbi::console_getchar, task::suspend_current_and_run_next};
+use crate::{
+    mm::page_table::translated_byte_buffer,
+    sbi::console_getchar,
+    task::{current_user_token, suspend_current_and_run_next},
+};
 
 const FD_STDOUT: usize = 1;
 const FD_STDIN: usize = 0;
@@ -6,9 +10,13 @@ const FD_STDIN: usize = 0;
 pub fn sys_write(fd: usize, buf: *const u8, len: usize) -> isize {
     match fd {
         FD_STDOUT => {
-            let slice = unsafe { core::slice::from_raw_parts(buf, len) };
-            let str = core::str::from_utf8(slice).unwrap();
-            print!("{}", str);
+            // let slice = unsafe { core::slice::from_raw_parts(buf, len) };
+            // let str = core::str::from_utf8(slice).unwrap();
+            // print!("{}", str);
+            let buffers = translated_byte_buffer(current_user_token(), buf, len);
+            for buffer in buffers {
+                print!("{}", core::str::from_utf8(buffer).unwrap());
+            }
             len as isize
         }
         _ => {

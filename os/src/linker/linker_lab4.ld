@@ -1,6 +1,6 @@
 OUTPUT_ARCH(riscv)
 ENTRY(_start)
-BASE_ADDRESS = 0x0;
+BASE_ADDRESS = 0x80200000;
 
 SECTIONS
 {
@@ -10,6 +10,10 @@ SECTIONS
     stext = .;
     .text : {
         *(.text.entry)
+        . = ALIGN(4K);
+        strampoline = .;
+        *(.text.trampoline);
+        . = ALIGN(4K);
         *(.text .text.*)
     }
     . = ALIGN(4K);
@@ -18,6 +22,7 @@ SECTIONS
     srodata = .;
     .rodata : {
         *(.rodata .rodata.*)
+        *(.srodata .srodata.*)
     }
     . = ALIGN(4K);
     erodata = .;
@@ -30,6 +35,7 @@ SECTIONS
     . = ALIGN(4K);
     edata = .;
 
+    sbss_with_stack = .;
     .bss : {
         *(.bss.stack)
         sbss = .;

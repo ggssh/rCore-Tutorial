@@ -34,42 +34,49 @@ fn clear_bss() {
         fn sbss();
         fn ebss();
     }
-    (sbss as usize..ebss as usize).for_each(|a| unsafe { (a as *mut u8).write_volatile(0) });
+    println!("[sbss]:{:#x} [ebss]:{:#x}", sbss as usize, ebss as usize);
+    unsafe {
+        core::slice::from_raw_parts_mut(sbss as usize as *mut u8, ebss as usize - sbss as usize)
+            .fill(0);
+    }
 }
 
 // 避免编译器对它的名字进行混淆,导致entry.asm找不到外部符号rust_main从而链接失败
 #[no_mangle]
 pub fn rust_main() {
     extern "C" {
-        fn stext();
-        fn etext();
-        fn srodata();
-        fn erodata();
-        fn sdata();
-        fn edata();
-        fn sbss();
-        fn ebss();
-        fn boot_stack();
-        fn boot_stack_top();
+        // fn stext();
+        // fn etext();
+        // fn srodata();
+        // fn erodata();
+        // fn sdata();
+        // fn edata();
+        // fn sbss();
+        // fn ebss();
+        // fn boot_stack();
+        // fn boot_stack_top();
     }
     clear_bss();
-
-    // mm::init();
+    info!("[kernel] Hello, world!");
+    mm::init();
+    info!("[kernel] back to world!");
     // mm::mm_test_heap();
 
-    info!(".text [{:#x}, {:#x})", stext as usize, etext as usize);
-    info!(".rodata [{:#x}, {:#x})", srodata as usize, erodata as usize);
-    info!(".data [{:#x}, {:#x})", sdata as usize, edata as usize);
-    info!(
-        "boot_stack [{:#x}, {:#x})",
-        boot_stack as usize, boot_stack_top as usize
-    );
-    info!(".bss [{:#x}, {:#x})", sbss as usize, ebss as usize);
+    mm::remap_test();
+
+    // info!(".text [{:#x}, {:#x})", stext as usize, etext as usize);
+    // info!(".rodata [{:#x}, {:#x})", srodata as usize, erodata as usize);
+    // info!(".data [{:#x}, {:#x})", sdata as usize, edata as usize);
+    // info!(
+    //     "boot_stack [{:#x}, {:#x})",
+    //     boot_stack as usize, boot_stack_top as usize
+    // );
+    // info!(".bss [{:#x}, {:#x})", sbss as usize, ebss as usize);
     // // sbi::shutdown();
     // panic!("It should shutdown!");
     trap::init();
 
-    loader::load_apps();
+    // loader::load_apps();
     enable_timer_interrupt();
     set_next_trigger();
     task::run_first_task();

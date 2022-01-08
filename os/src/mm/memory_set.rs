@@ -1,16 +1,27 @@
+use _core::arch::asm;
+use alloc::sync::Arc;
 use alloc::{collections::BTreeMap, vec::Vec};
 use bitflags::*;
+use lazy_static::*;
 
 use crate::{
     config::{MEMORY_END, PAGE_SIZE, TRAMPOLINE, TRAP_CONTEXT, USER_STACK_SIZE},
     mm::address::StepByOne,
+    sync::UPSafeCell,
 };
 
+use super::page_table::PageTableEntry;
 use super::{
     address::{PhysAddr, PhysPageNum, VPNRange, VirtAddr, VirtPageNum},
     frame_allocator::{frame_alloc, FrameTracker},
     page_table::{PTEFlags, PageTable},
 };
+
+// 创建内核空间的全局实例
+lazy_static! {
+    pub static ref KERNEL_SPACE: Arc<UPSafeCell<MemorySet>> =
+        Arc::new(unsafe { UPSafeCell::new(MemorySet::new_kernel()) });
+}
 
 pub struct MapArea {
     vpn_range: VPNRange,
@@ -28,6 +39,7 @@ impl MapArea {
     ) -> Self {
         let start_vpn: VirtPageNum = start_va.floor();
         let end_vpn: VirtPageNum = end_va.ceil();
+        println!("start_vpn:{:#?} end_vpn:{:#?}", &start_vpn, &end_vpn);
         Self {
             vpn_range: VPNRange::new(start_vpn, end_vpn),
             data_frames: BTreeMap::new(),
@@ -196,7 +208,7 @@ impl MemorySet {
                 (stext as usize).into(),
                 (etext as usize).into(),
                 MapType::Identical,
-                MapPermission::R,
+                MapPermission::R | MapPermission::X, //这个地方遇到问题
             ),
             None,
         );
@@ -244,7 +256,6 @@ impl MemorySet {
             ),
             None,
         );
-
         memory_set
     }
 
@@ -252,6 +263,7 @@ impl MemorySet {
     // include sections in elf and trampoline and TrapContext and user stack,
     // also returns user_sp and entry point
     pub fn from_elf(elf_data: &[u8]) -> (Self, usize, usize) {
+        print!("into from_elf func");
         let mut memory_set = Self::new_bare();
         // map trampoline
         memory_set.map_trampoline();
@@ -319,4 +331,57 @@ impl MemorySet {
             elf.header.pt2.entry_point() as usize,
         )
     }
+
+    pub fn activate(&self) {
+        // info!("into activate");
+        let satp = self.page_table.token();
+        // info!("into activate");
+        unsafe {
+            // 从此刻SV39分页模式启用
+            riscv::register::satp::write(satp);
+            // 清空快表,清除过期键值对
+            asm!("sfence.vma");
+        }
+    }
+
+    pub fn translate(&self, vpn: VirtPageNum) -> Option<PageTableEntry> {
+        self.page_table.translate(vpn)
+    }
+
+    pub fn token(&self) -> usize {
+        self.page_table.token()
+    }
+}
+
+#[allow(unused)]
+pub fn remap_test() {
+    let mut kernel_space = KERNEL_SPACE.exclusive_access();
+    let mid_text: VirtAddr = ((stext as usize + etext as usize) / 2).into();
+    let mid_rodata: VirtAddr = ((srodata as usize + erodata as usize) / 2).into();
+    let mid_data: VirtAddr = ((sdata as usize + edata as usize) / 2).into();
+    assert_eq!(
+        kernel_space
+            .page_table
+            .translate(mid_text.floor())
+            .unwrap()
+            .writable(),
+        false
+    );
+    assert_eq!(
+        kernel_space
+            .page_table
+            .translate(mid_rodata.floor())
+            .unwrap()
+            .writable(),
+        false,
+    );
+    assert_eq!(
+        kernel_space
+            .page_table
+            .translate(mid_data.floor())
+            .unwrap()
+            .executable(),
+        false,
+    );
+    println!("remap_test passed!");
 }
